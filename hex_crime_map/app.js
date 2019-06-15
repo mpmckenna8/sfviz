@@ -14,7 +14,8 @@ let crime_uri = "https://data.sfgov.org/resource/wg3w-h783.json?$limit=" + numbR
 const INITIAL_VIEW_STATE = {
   latitude: 37.79056523653,
   longitude: -122.44857881825685,
-  zoom: 8,
+  
+  zoom: 12,
   bearing: 0,
   pitch: 30
 };

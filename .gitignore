@@ -1,2 +1,5 @@
 /node_modules
 /dist
+/hex_crime_map/node_modules
+/hex_crime_map/dist
+hex_crime_map/node_modules/
