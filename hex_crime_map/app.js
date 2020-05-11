@@ -1,10 +1,13 @@
 import {Deck} from '@deck.gl/core';
 import {GeoJsonLayer, ArcLayer} from '@deck.gl/layers';
+
+// https://github.com/visgl/deck.gl/blob/master/docs/layers/hexagon-layer.md
 import {HexagonLayer} from '@deck.gl/aggregation-layers';
+
 import sfcri2geojson from 'sfcri2geojson'
 import mapboxgl from 'mapbox-gl';
 
-var numbRes = 3000;
+var numbRes = 4000;
 
 
 let crime_uri = "https://data.sfgov.org/resource/wg3w-h783.json?$limit=" + numbRes + '&$order=incident_datetime DESC';
@@ -24,7 +27,7 @@ const INITIAL_VIEW_STATE = {
 mapboxgl.accessToken = 'pk.eyJ1IjoibXBtY2tlbm5hOCIsImEiOiJfYWx3RlJZIn0.v-vrWv_t1ytntvWpeePhgQ'; // eslint-disable-line
 
 
-
+let geojson_local = {"type":"FeatureCollection","features":[]}
 
 const map = new mapboxgl.Map({
   container: 'map',
@@ -44,14 +47,28 @@ export const crimer = fetch(crime_uri)
     return res.json();
   })
   .then( datam => {
-  //  console.log('crime data ', data)
-    let data = sfcri2geojson(JSON.stringify(datam)).geojson;
+   console.log('crime data ', datam)
+
+   geojson_local.features = datam;
+  //  let data = sfcri2geojson(datam).geojson;
     //console.log('crime points are: ', crime_points)
 
-    let coords_array = data.features.map( d => {
+    let coords_array = datam.map( d => {
 
-      let coords = d.geometry.coordinates
-      return [ parseFloat(coords[1] ) , parseFloat(coords[0])]
+      let coords = [ d.latitude, d.longitude]
+      if ( coords[0] ) {
+        coords[0] = parseFloat(coords[0]);
+      }
+      else {
+        coords[0] = 1.0;
+      }
+      if ( coords[1] ) {
+        coords[1] = parseFloat(coords[1]);
+      }
+      else {
+        coords[1] = 1.0;
+      }
+      return [ (coords[1] ) , (coords[0])]
     });
 
     console.log(coords_array)
@@ -85,15 +102,23 @@ export const crimer = fetch(crime_uri)
   layers: [
       new HexagonLayer({
               id: 'heatmap',
-          //    colorRange: COLOR_RANGE,
-              data:coords_array,
-          //    elevationRange: [0, 1000],
-              elevationScale: 10,
+              pickable: true,
+              colorRange: COLOR_RANGE,
+              data:  coords_array,
+           //   elevationRange: [0, 200],
+        //      elevationScale: 200,
               extruded: true,
-              radius: 400,
+              radius: 300,
               getPosition: d => {
                 //console.log('getting postion', d)
                 return d
+              },
+              onHover: ({object, x, y}) => {
+                console.log('object hovered, ', object)
+               // const tooltip = `${object.centroid.join(', ')}\nCount: ${object.points.length}`;
+                /* Update tooltip
+                   http://deck.gl/#/documentation/developer-guide/adding-interactivity?section=example-display-a-tooltip-for-hovered-object
+                */
               },
               opacity: .4
 
