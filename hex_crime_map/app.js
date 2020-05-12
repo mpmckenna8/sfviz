@@ -1,5 +1,6 @@
 import {Deck} from '@deck.gl/core';
 import {GeoJsonLayer, ArcLayer} from '@deck.gl/layers';
+import d3 from 'd3'
 
 // https://github.com/visgl/deck.gl/blob/master/docs/layers/hexagon-layer.md
 import {HexagonLayer} from '@deck.gl/aggregation-layers';
@@ -7,23 +8,34 @@ import {HexagonLayer} from '@deck.gl/aggregation-layers';
 import sfcri2geojson from 'sfcri2geojson'
 import mapboxgl from 'mapbox-gl';
 
-var numbRes = 4000;
+var numbRes = 8000;
+
+let base_crime_uri = "https://data.sfgov.org/resource/wg3w-h783.json?"
+let crime_uri = "https://data.sfgov.org/resource/wg3w-h783.json?$where=incident_date between '2020-04-01T00:00:00' and '2020-05-01T01:00:00'&$limit=" + numbRes + '&$order=incident_datetime DESC';
 
 
-let crime_uri = "https://data.sfgov.org/resource/wg3w-h783.json?$limit=" + numbRes + '&$order=incident_datetime DESC';
+let earliest_date = new Date()
+let latest_date = new Date();
 
 
+let max_points = 5;
 
 const INITIAL_VIEW_STATE = {
-  latitude: 37.79056523653,
-  longitude: -122.44857881825685,
+  latitude: 37.77056523653,
+  longitude: -122.410757881825685,
   
-  zoom: 12,
+  zoom: 11,
   bearing: 0,
   pitch: 30
 };
 
+let incident_categories = [];
+let incident_category = "All";
 
+let date_filter = "&$where=date between '2020-01-10T12:00:00' and '2020-01-10T14:00:00'" //"&$where=incident_date between " + "2020-4-13T00:00:00.000 and 2020-5-13T00:00:00.000"//new Date('may 4, 2020')
+
+//crime_uri = crime_uri + date_filter;
+// $where=date between '2020-01-10T12:00:00' and '2020-01-10T14:00:00'
 mapboxgl.accessToken = 'pk.eyJ1IjoibXBtY2tlbm5hOCIsImEiOiJfYWx3RlJZIn0.v-vrWv_t1ytntvWpeePhgQ'; // eslint-disable-line
 
 
@@ -84,6 +96,8 @@ export const crimer = fetch(crime_uri)
 
     const OPTIONS = ['radius', 'coverage', 'upperPercentile'];
 
+    // make legend;
+  //  d3.select("#map_legend")
 
   const deck = new Deck({
     canvas: 'deck-canvas',
@@ -105,24 +119,37 @@ export const crimer = fetch(crime_uri)
               pickable: true,
               colorRange: COLOR_RANGE,
               data:  coords_array,
-           //   elevationRange: [0, 200],
-        //      elevationScale: 200,
+              elevationDomain: [1, 387],
+              colorDomain: [1, 387],
+              elevationScale: 9,
               extruded: true,
               radius: 300,
+              getColorValue: points => {
+                //console.log('color value = ', points.length)
+                if( points.length > max_points) {
+                  max_points = points.length
+                }
+                return points.length
+              },
               getPosition: d => {
                 //console.log('getting postion', d)
                 return d
               },
               onHover: ({object, x, y}) => {
-                console.log('object hovered, ', object)
+               // console.log('object hovered, ', object)
                // const tooltip = `${object.centroid.join(', ')}\nCount: ${object.points.length}`;
                 /* Update tooltip
                    http://deck.gl/#/documentation/developer-guide/adding-interactivity?section=example-display-a-tooltip-for-hovered-object
                 */
               },
+              onSetColorDomain: (ecol) => {
+                console.log('color domain set', ecol)
+                console.log('max_points: ', max_points)
+
+              },
               opacity: .4
 
-          //    ...options
+            //  ...options
             }),
 
     ]

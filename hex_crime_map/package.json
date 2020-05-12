@@ -11,6 +11,7 @@
     "@deck.gl/aggregation-layers": "^7.0.9",
     "@deck.gl/core": "^7.0.0-beta",
     "@deck.gl/layers": "^7.0.0-beta",
+    "d3": "^5.16.0",
     "mapbox-gl": "^1.10.0",
     "sfcri2geojson": "0.0.4"
   },
