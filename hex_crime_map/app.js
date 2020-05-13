@@ -15,7 +15,7 @@ start_input.onchange =  start_date_change
 let end_input = document.querySelector('#end_date_input')
 end_input.onchange =  end_date_change
 
-
+let max_span = document.querySelector('#max_poly')
 
 let uriInfo =  {
   start_date: '02-02-2020'
@@ -181,10 +181,11 @@ function renderCrimez() {
               http://deck.gl/#/documentation/developer-guide/adding-interactivity?section=example-display-a-tooltip-for-hovered-object
             */
           },
-        //  onSetColorDomain: (ecol) => {
-        //    console.log('color domain set', ecol)
+          onSetColorDomain: (ecol) => {
+            console.log('color domain set', ecol)
+            max_span.innerHTML = ecol[1]
           //  console.log('max_points: ', max_points)
-          //},
+          },
           updateTriggers: {
             // This tells deck.gl to recalculat radius when `currentYear` changes
             getPosition: long_lat,
@@ -226,8 +227,7 @@ function renderCrimez() {
   
 renderCrimez()
 //update_crime_data();
-document.querySelector('#rerender_button')
-  .onclick = update_crime_data
+
 
 // For automated test cases
 /* global document */
@@ -262,7 +262,6 @@ function end_date_change(e) {
   query_parameters.set('end_date', end_date)
 
   window.location.search = "?" + query_parameters.toString()
-  
 }
 
 function update_crime_data() {
