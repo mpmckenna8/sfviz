@@ -9,24 +9,53 @@ import sfcri2geojson from 'sfcri2geojson'
 import mapboxgl from 'mapbox-gl';
 
 
-let uri_obj = {
-  base: "https://data.sfgov.org/resource/wg3w-h783.json?",
-  res_limit: 9000,
-  res_limit_str: "$limit=",
-  res_limit_query: function() {
-    return (this.res_limit_str + this.res_limit)
-  },
-  date_start: '2020-01-01T00:00:00',
-  date_end: '2020-01-02T01:00:00', 
-  date_range_str: function() {
-    return "$where=incident_date between '" + this.date_start + "' and '" + this.date_end+ "'"
-  },
-  make_uri: function() {
-    return (this.base + this.res_limit_query() + "&" + this.date_range_str() )
-  },
+let start_input = document.querySelector('#start_date_input')
+start_input.onchange =  start_date_change
+
+let end_input = document.querySelector('#end_date_input')
+end_input.onchange =  end_date_change
 
 
+
+let uriInfo =  {
+  start_date: '02-02-2020'
 }
+
+let query_parameters = new URLSearchParams( window.location.search );
+
+console.log('query params', query_parameters.values() )
+
+
+  let uri_obj = {
+    base: "https://data.sfgov.org/resource/wg3w-h783.json?",
+    res_limit: 19000,
+    res_limit_str: "$limit=",
+    res_limit_query: function() {
+      return (this.res_limit_str + this.res_limit)
+    },
+    date_start: '2020-01-01T00:00:00',
+    date_end: '2020-01-02T01:00:00', 
+    date_range_str: function() {
+      return "$where=incident_date between '" + this.date_start + "' and '" + this.date_end+ "'"
+    },
+    make_uri: function() {
+      return (this.base + this.res_limit_query() + "&" + this.date_range_str() )
+    },
+
+  }
+
+let uri_start = query_parameters.get('start_date')
+if(uri_start ) {
+  uri_obj.date_start =  uri_start;
+  start_input.value = uri_start;
+}
+
+let uri_end = query_parameters.get('end_date')
+if(uri_end ) {
+  uri_obj.date_end =  uri_end;
+  end_input.value = uri_end;
+}
+console.log('usi start', uri_start)
 
 console.log('uri from obj', uri_obj.make_uri() )
 
@@ -101,6 +130,8 @@ function renderCrimez() {
       .then( datam => {
       console.log('crime data ', datam)
       feats_obj.coords_array = datam;
+
+      document.querySelector('#crimes_total').innerHTML = datam.length
       //  let data = sfcri2geojson(datam).geojson;
         //console.log('crime points are: ', crime_points)
 
@@ -126,7 +157,7 @@ function renderCrimez() {
             return points.length
           },
           getPosition: d => {
-            console.log('getting postion', d)
+          //  console.log('getting postion', d)
             long_lat = []
             if( d.longitude ) {
               long_lat.push(d.longitude)
@@ -140,7 +171,7 @@ function renderCrimez() {
             else{
               long_lat.push("2.2")
             }   
-            console.log('poistion', [ parseFloat( long_lat[0] ), parseFloat( long_lat[1] ) ] ) 
+           // console.log('poistion', [ parseFloat( long_lat[0] ), parseFloat( long_lat[1] ) ] ) 
             return [ parseFloat( long_lat[0] ), parseFloat( long_lat[1] ) ] //d.point//[d[0], d[1] ] //
           },
           onHover: ({object, x, y}) => {
@@ -204,9 +235,6 @@ document.body.style.margin = '0px';
 
 
 
-document.querySelector('#start_date_input')
-.onchange =  start_date_change
-
 document.querySelector('#end_date_input')
 .onchange =  end_date_change
 
@@ -217,7 +245,12 @@ function start_date_change(e) {
 
   let start_date = e.target.value;
   uri_obj.date_start = start_date;
+
+  query_parameters.set('start_date', start_date)
   
+  query_parameters.set('start_date', start_date)
+
+  window.location.search = "?" + query_parameters.toString()
 }
 
 function end_date_change(e) {
@@ -225,6 +258,10 @@ function end_date_change(e) {
 
   let end_date = e.target.value;
   uri_obj.date_end = end_date;
+
+  query_parameters.set('end_date', end_date)
+
+  window.location.search = "?" + query_parameters.toString()
   
 }
 
