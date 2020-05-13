@@ -15,6 +15,11 @@ const CONFIG = {
       'mapbox-gl$': resolve('./node_modules/mapbox-gl/dist/mapbox-gl.js')
     }
   },
+  externals: {
+    //'mapbox-gl': 'mapboxgl',
+   // "Deck": '@deck.gl/core',
+   // "HexagonLayer": '@deck.gl/aggregation-layers'
+  },
   // Optional: Enables reading mapbox token from environment variable
   //plugins: [new webpack.EnvironmentPlugin(['MapboxAccessToken'])]
 };

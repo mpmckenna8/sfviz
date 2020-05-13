@@ -1,11 +1,11 @@
 import {Deck} from '@deck.gl/core';
-import {GeoJsonLayer, ArcLayer} from '@deck.gl/layers';
-import d3 from 'd3'
+import {GeoJsonLayer} from '@deck.gl/layers';
+//import d3 from 'd3'
 
 // https://github.com/visgl/deck.gl/blob/master/docs/layers/hexagon-layer.md
 import {HexagonLayer} from '@deck.gl/aggregation-layers';
 
-import sfcri2geojson from 'sfcri2geojson'
+//import sfcri2geojson from 'sfcri2geojson'
 import mapboxgl from 'mapbox-gl';
 
 
@@ -220,19 +220,15 @@ function renderCrimez() {
         // make legend;
       //  d3.select("#map_legend")
 
-
-
     })
 }
   
 renderCrimez()
 //update_crime_data();
 
-
 // For automated test cases
 /* global document */
 document.body.style.margin = '0px';
-
 
 
 document.querySelector('#end_date_input')
@@ -241,7 +237,7 @@ document.querySelector('#end_date_input')
 
 
 function start_date_change(e) {
-  console.log('start date changed', e, this)
+  //console.log('start date changed', e, this)
 
   let start_date = e.target.value;
   uri_obj.date_start = start_date;
@@ -254,7 +250,7 @@ function start_date_change(e) {
 }
 
 function end_date_change(e) {
-  console.log('end date changed', e.target.value, this)
+  //console.log('end date changed', e.target.value, this)
 
   let end_date = e.target.value;
   uri_obj.date_end = end_date;
@@ -264,47 +260,3 @@ function end_date_change(e) {
   window.location.search = "?" + query_parameters.toString()
 }
 
-function update_crime_data() {
-  console.log('trying to update the data')
-  fetch( uri_obj.make_uri() )
-      .then((res) => {
-        return res.json();
-      })
-      .then( datas => {
-      console.log('crime data ', datas)
-      feats_obj.coords_array = datas;
-      max_points = datas.length;
-
-      /*
-      coords_array = coords_array.concat( datas.map( d => {
-
-          let coords = [ d.latitude, d.longitude]
-          if ( coords[0] ) {
-            coords[0] = parseFloat(coords[0]);
-          }
-          else {
-            coords[0] = 1.0;
-          }
-          if ( coords[1] ) {
-            coords[1] = parseFloat(coords[1]);
-          }
-          else {
-            coords[1] = 1.0;
-          }
-          return [ (coords[1] ) , (coords[0])]
-        })
-
-      )
-
-
-        console.log('new coords_arra', coords_array)
-       // hexlayer.setState( { data: coords_array })
-       // hexlayer.draw()
-        return coords_array
-
-*/
-
-      //  console.log(hexlayer)
-
-      })
-}
