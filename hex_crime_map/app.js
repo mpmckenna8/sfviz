@@ -8,17 +8,16 @@ import {HexagonLayer} from '@deck.gl/aggregation-layers';
 import sfcri2geojson from 'sfcri2geojson'
 import mapboxgl from 'mapbox-gl';
 
-var numbRes = 8000;
 
 let uri_obj = {
   base: "https://data.sfgov.org/resource/wg3w-h783.json?",
-  res_limit: 8000,
+  res_limit: 9000,
   res_limit_str: "$limit=",
   res_limit_query: function() {
     return (this.res_limit_str + this.res_limit)
   },
   date_start: '2020-01-01T00:00:00',
-  date_end: '2020-05-01T01:00:00', 
+  date_end: '2020-01-02T01:00:00', 
   date_range_str: function() {
     return "$where=incident_date between '" + this.date_start + "' and '" + this.date_end+ "'"
   },
@@ -33,9 +32,6 @@ console.log('uri from obj', uri_obj.make_uri() )
 
 // example with date filter:
 //let crime_uri = "https://data.sfgov.org/resource/wg3w-h783.json?$where=incident_date between '2020-04-01T00:00:00' and '2020-05-01T01:00:00'&$limit=" + numbRes + '&$order=incident_datetime DESC';
-
-let base_crime_uri = "https://data.sfgov.org/resource/wg3w-h783.json?"
-let crime_uri = "https://data.sfgov.org/resource/wg3w-h783.json?$where=incident_date between '2020-01-01T00:00:00' and '2020-05-01T01:00:00'&$limit=" + numbRes + '&$order=incident_datetime DESC';
 
 
 
@@ -74,7 +70,25 @@ const map = new mapboxgl.Map({
 });
 
 
-let deck = {}
+let coords_array = [
+   {
+  analysis_neighborhood: "Tenderloin",
+latitude: "37.78175909075511",
+longitude: "-122.41468313321063",
+police_district: "Tenderloin",
+  },  {point: [1.2,2.1], longitude: "2.12", latitude:"32.23" }];
+let feats_obj = { coords_array: coords_array }
+
+const COLOR_RANGE = [
+  [1, 152, 189],
+  [73, 227, 206],
+  [216, 254, 181],
+  [254, 237, 177],
+  [254, 173, 84],
+  [209, 55, 78]
+];
+
+let long_lat = []
 
 
 
@@ -86,12 +100,147 @@ function renderCrimez() {
       })
       .then( datam => {
       console.log('crime data ', datam)
-
-      geojson_local.features = datam;
+      feats_obj.coords_array = datam;
       //  let data = sfcri2geojson(datam).geojson;
         //console.log('crime points are: ', crime_points)
 
-        let coords_array = datam.map( d => {
+        const hexlayer = new HexagonLayer({
+          id: 'heatmap',
+          pickable: true,
+          colorRange: COLOR_RANGE,
+          data:  feats_obj.coords_array,
+       //   dataComparator: (newD, oldD) => { 
+         //   console.log('newD', newD, 'oldD', oldD)
+         //   return newD.length === oldD.length },
+      //    _dataDiff: (newData, oldData) => [{startRow: index, endRow: index + 1}],
+         // elevationDomain: [1, 387],
+         // colorDomain: [1, 387],
+          elevationScale: 9,
+          extruded: true,
+          radius: 300,
+         getColorValue: points => {
+            //console.log('color value = ', points.length)
+            if( points.length > max_points) {
+              max_points = points.length
+            }
+            return points.length
+          },
+          getPosition: d => {
+            console.log('getting postion', d)
+            long_lat = []
+            if( d.longitude ) {
+              long_lat.push(d.longitude)
+            }
+            else{
+              long_lat.push("2.2")
+            }
+            if( d.latitude ) {
+              long_lat.push(d.latitude)
+            }
+            else{
+              long_lat.push("2.2")
+            }   
+            console.log('poistion', [ parseFloat( long_lat[0] ), parseFloat( long_lat[1] ) ] ) 
+            return [ parseFloat( long_lat[0] ), parseFloat( long_lat[1] ) ] //d.point//[d[0], d[1] ] //
+          },
+          onHover: ({object, x, y}) => {
+          // console.log('object hovered, ', object)
+          // const tooltip = `${object.centroid.join(', ')}\nCount: ${object.points.length}`;
+            /* Update tooltip
+              http://deck.gl/#/documentation/developer-guide/adding-interactivity?section=example-display-a-tooltip-for-hovered-object
+            */
+          },
+        //  onSetColorDomain: (ecol) => {
+        //    console.log('color domain set', ecol)
+          //  console.log('max_points: ', max_points)
+          //},
+          updateTriggers: {
+            // This tells deck.gl to recalculat radius when `currentYear` changes
+            getPosition: long_lat,
+           // getColorValue:max_points
+          },
+          opacity: .4
+        //  ...options
+        })
+
+        const deck = new Deck({
+          canvas: 'deck-canvas',
+          width: '100%',
+          height: '100%',
+          initialViewState: INITIAL_VIEW_STATE,
+          controller: true,
+          onViewStateChange: ({viewState}) => {
+            map.jumpTo({
+              center: [viewState.longitude, viewState.latitude],
+              zoom: viewState.zoom,
+              bearing: viewState.bearing,
+              pitch: viewState.pitch
+            });
+          },
+          layers: [
+            hexlayer
+          ]
+        });
+
+
+        const OPTIONS = ['radius', 'coverage', 'upperPercentile'];
+
+        // make legend;
+      //  d3.select("#map_legend")
+
+
+
+    })
+}
+  
+renderCrimez()
+//update_crime_data();
+document.querySelector('#rerender_button')
+  .onclick = update_crime_data
+
+// For automated test cases
+/* global document */
+document.body.style.margin = '0px';
+
+
+
+document.querySelector('#start_date_input')
+.onchange =  start_date_change
+
+document.querySelector('#end_date_input')
+.onchange =  end_date_change
+
+
+
+function start_date_change(e) {
+  console.log('start date changed', e, this)
+
+  let start_date = e.target.value;
+  uri_obj.date_start = start_date;
+  
+}
+
+function end_date_change(e) {
+  console.log('end date changed', e.target.value, this)
+
+  let end_date = e.target.value;
+  uri_obj.date_end = end_date;
+  
+}
+
+function update_crime_data() {
+  console.log('trying to update the data')
+  fetch( uri_obj.make_uri() )
+      .then((res) => {
+        return res.json();
+      })
+      .then( datas => {
+      console.log('crime data ', datas)
+      feats_obj.coords_array = datas;
+      max_points = datas.length;
+
+      /*
+      coords_array = coords_array.concat( datas.map( d => {
 
           let coords = [ d.latitude, d.longitude]
           if ( coords[0] ) {
@@ -107,85 +256,19 @@ function renderCrimez() {
             coords[1] = 1.0;
           }
           return [ (coords[1] ) , (coords[0])]
-        });
+        })
 
-        console.log(coords_array)
-
-        const COLOR_RANGE = [
-          [1, 152, 189],
-          [73, 227, 206],
-          [216, 254, 181],
-          [254, 237, 177],
-          [254, 173, 84],
-          [209, 55, 78]
-        ];
-
-        const OPTIONS = ['radius', 'coverage', 'upperPercentile'];
-
-        // make legend;
-      //  d3.select("#map_legend")
+      )
 
 
-        deck = new Deck({
-        canvas: 'deck-canvas',
-        width: '100%',
-        height: '100%',
-        initialViewState: INITIAL_VIEW_STATE,
-        controller: true,
-        onViewStateChange: ({viewState}) => {
-          map.jumpTo({
-            center: [viewState.longitude, viewState.latitude],
-            zoom: viewState.zoom,
-            bearing: viewState.bearing,
-            pitch: viewState.pitch
-          });
-        },
-      layers: [
-          new HexagonLayer({
-                  id: 'heatmap',
-                  pickable: true,
-                  colorRange: COLOR_RANGE,
-                  data:  coords_array,
-                  elevationDomain: [1, 387],
-                  colorDomain: [1, 387],
-                  elevationScale: 9,
-                  extruded: true,
-                  radius: 300,
-                  getColorValue: points => {
-                    //console.log('color value = ', points.length)
-                    if( points.length > max_points) {
-                      max_points = points.length
-                    }
-                    return points.length
-                  },
-                  getPosition: d => {
-                    //console.log('getting postion', d)
-                    return d
-                  },
-                  onHover: ({object, x, y}) => {
-                  // console.log('object hovered, ', object)
-                  // const tooltip = `${object.centroid.join(', ')}\nCount: ${object.points.length}`;
-                    /* Update tooltip
-                      http://deck.gl/#/documentation/developer-guide/adding-interactivity?section=example-display-a-tooltip-for-hovered-object
-                    */
-                  },
-                  onSetColorDomain: (ecol) => {
-                    console.log('color domain set', ecol)
-                    console.log('max_points: ', max_points)
+        console.log('new coords_arra', coords_array)
+       // hexlayer.setState( { data: coords_array })
+       // hexlayer.draw()
+        return coords_array
 
-                  },
-                  opacity: .4
+*/
 
-                //  ...options
-                }),
-
-        ]
-      });
+      //  console.log(hexlayer)
 
       })
 }
-  
-renderCrimez()
-// For automated test cases
-/* global document */
-document.body.style.margin = '0px';
