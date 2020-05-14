@@ -30,14 +30,15 @@
       width:284px;
       height: 80%;
       padding: 30px 30px 30px 30px;
-      margin: 10px
+      margin: 10px;
+      overflow:scroll;
     }
 
     #proj_text {
       opacity: 1;
     }
     </style>
-    <link href="https://api.mapbox.com/mapbox-gl-js/v1.10.0/mapbox-gl.css" rel="stylesheet" />
+<!-- optional if mapbox base map is needed -->
 
 
   </head>
@@ -68,6 +69,13 @@
       <p>Total crimes: <span id="crimes_total">0</span></p>
 
       <p>Max reports in a polygon: <span id="max_poly">1</span></p>
+
+      <div>
+        Categories
+        <table id="category_list">
+        
+        </table>
+      </div>
       <p>
         A simple map of the data from the SF Data portal pertaining to police reports filed with a geotag. For a map of just all the points for the portal see: <a href="https://data.sfgov.org/Public-Safety/Map-of-Police-Department-Incident-Reports-2018-to-/jq29-s5wp"> SFPD reports map</a>.
 
