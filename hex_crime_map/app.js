@@ -17,9 +17,7 @@ end_input.onchange =  end_date_change
 
 let max_span = document.querySelector('#max_poly')
 
-let uriInfo =  {
-  start_date: '02-02-2020'
-}
+
 
 let query_parameters = new URLSearchParams( window.location.search );
 
@@ -28,7 +26,7 @@ console.log('query params', query_parameters.values() )
 
   let uri_obj = {
     base: "https://data.sfgov.org/resource/wg3w-h783.json?",
-    res_limit: 19000,
+    res_limit: 25000,
     res_limit_str: "$limit=",
     res_limit_query: function() {
       return (this.res_limit_str + this.res_limit)
@@ -75,7 +73,7 @@ const INITIAL_VIEW_STATE = {
 };
 
 
-let incident_categories = [];
+let incident_categories = {};
 let incident_category = "All";
 
 let date_filter = "&$where=date between '2020-01-01T12:00:00' and '2020-05-01T14:00:00'" //"&$where=incident_date between " + "2020-4-13T00:00:00.000 and 2020-5-13T00:00:00.000"//new Date('may 4, 2020')
@@ -132,8 +130,7 @@ function renderCrimez() {
       feats_obj.coords_array = datam;
 
       document.querySelector('#crimes_total').innerHTML = datam.length
-      //  let data = sfcri2geojson(datam).geojson;
-        //console.log('crime points are: ', crime_points)
+
 
         const hexlayer = new HexagonLayer({
           id: 'heatmap',
@@ -154,6 +151,8 @@ function renderCrimez() {
             if( points.length > max_points) {
               max_points = points.length
             }
+            console.log('incident cats, ', incident_categories)
+            renderCategories( incident_categories )
             return points.length
           },
           getPosition: d => {
@@ -171,6 +170,15 @@ function renderCrimez() {
             else{
               long_lat.push("2.2")
             }   
+
+            if( Object.keys(incident_categories).includes(d.incident_category) ) {
+
+              incident_categories[ d.incident_category ].count =  incident_categories[ d.incident_category ].count + 1
+            }
+            else {
+              incident_categories[ d.incident_category ] = {count: 1}
+            }
+
            // console.log('poistion', [ parseFloat( long_lat[0] ), parseFloat( long_lat[1] ) ] ) 
             return [ parseFloat( long_lat[0] ), parseFloat( long_lat[1] ) ] //d.point//[d[0], d[1] ] //
           },
@@ -260,3 +268,19 @@ function end_date_change(e) {
   window.location.search = "?" + query_parameters.toString()
 }
 
+let cat_list = document.querySelector( "#category_list" )
+
+function renderCategories( incident_categories ) {
+
+  let incident_keys = Object.keys( incident_categories )
+  incident_keys = incident_keys.sort( ( a,b ) =>   incident_categories[b].count - incident_categories[a].count )
+  
+  console.log('incident_keys = ', incident_keys)
+  let catHTML = "<tbody>"
+
+  for( let incident of incident_keys) {
+    catHTML = catHTML + "<tr><td>" + incident + "</td><td>" + incident_categories[incident].count + "</td></tr>"
+  }
+  catHTML = catHTML + "</tbody>"
+  cat_list.innerHTML = catHTML;
+}
