@@ -39,8 +39,13 @@ console.log('query params', query_parameters.values() )
     make_uri: function() {
       return (this.base + this.res_limit_query() + "&" + this.date_range_str() )
     },
-
   }
+
+let res_limit = query_parameters.get('limit')
+if(res_limit) {
+  uri_obj.res_limit = res_limit
+  document.querySelector('#max_incidents_input').placeholder = res_limit
+}
 
 let uri_start = query_parameters.get('start_date')
 if(uri_start ) {
@@ -53,14 +58,14 @@ if(uri_end ) {
   uri_obj.date_end =  uri_end;
   end_input.value = uri_end;
 }
+
+
 console.log('usi start', uri_start)
 
 console.log('uri from obj', uri_obj.make_uri() )
 
 // example with date filter:
 //let crime_uri = "https://data.sfgov.org/resource/wg3w-h783.json?$where=incident_date between '2020-04-01T00:00:00' and '2020-05-01T01:00:00'&$limit=" + numbRes + '&$order=incident_datetime DESC';
-
-
 
 let max_points = 5;
 
@@ -96,14 +101,18 @@ const map = new mapboxgl.Map({
   pitch: INITIAL_VIEW_STATE.pitch
 });
 
-
-let coords_array = [
-   {
+// i think this is like an example of the data we get back from API call for sf data
+let coords_array = [{
   analysis_neighborhood: "Tenderloin",
-latitude: "37.78175909075511",
-longitude: "-122.41468313321063",
-police_district: "Tenderloin",
-  },  {point: [1.2,2.1], longitude: "2.12", latitude:"32.23" }];
+  latitude: "37.78175909075511",
+  longitude: "-122.41468313321063",
+  police_district: "Tenderloin",
+  },  
+  {point: [1.2,2.1], 
+    longitude: "2.12", 
+    latitude:"32.23" }];
+
+// I don't really understand why i did this
 let feats_obj = { coords_array: coords_array }
 
 const COLOR_RANGE = [
@@ -132,6 +141,7 @@ function renderCrimez() {
       document.querySelector('#crimes_total').innerHTML = datam.length
 
 
+      // want to make these things kind of selectable so you can compare different timescales better.
         const hexlayer = new HexagonLayer({
           id: 'heatmap',
           pickable: true,
@@ -151,7 +161,7 @@ function renderCrimez() {
             if( points.length > max_points) {
               max_points = points.length
             }
-            console.log('incident cats, ', incident_categories)
+ //           console.log('incident cats, ', incident_categories)
             renderCategories( incident_categories )
             return points.length
           },
@@ -232,7 +242,6 @@ function renderCrimez() {
 }
   
 renderCrimez()
-//update_crime_data();
 
 // For automated test cases
 /* global document */
@@ -242,7 +251,16 @@ document.body.style.margin = '0px';
 document.querySelector('#end_date_input')
 .onchange =  end_date_change
 
+document.querySelector('#max_incidents_input').onchange = updateMaxIncidents
 
+function updateMaxIncidents(e) {
+
+  let incident_limit = e.target.value 
+  uri_obj.res_limit = e.target.value;
+  query_parameters.set("limit", incident_limit )
+
+  window.location.search = "?" + query_parameters.toString();
+}
 
 function start_date_change(e) {
   //console.log('start date changed', e, this)
@@ -252,8 +270,6 @@ function start_date_change(e) {
 
   query_parameters.set('start_date', start_date)
   
-  query_parameters.set('start_date', start_date)
-
   window.location.search = "?" + query_parameters.toString()
 }
 
@@ -267,6 +283,7 @@ function end_date_change(e) {
 
   window.location.search = "?" + query_parameters.toString()
 }
+
 
 let cat_list = document.querySelector( "#category_list" )
 
