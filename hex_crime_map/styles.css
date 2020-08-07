@@ -1,0 +1,32 @@
+    #container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+    #container > * {
+      position: absolute;
+      top: 0;
+    //  left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+
+    #proj_description {
+      opacity: .8;
+      background-color: green;
+      position: absolute;
+      right:0;
+      top:0;
+      width:284px;
+      height: 80%;
+      padding: 30px 30px 30px 30px;
+      margin: 10px;
+      overflow:scroll;
+    }
+
+    #proj_text {
+      opacity: 1;
+    }
