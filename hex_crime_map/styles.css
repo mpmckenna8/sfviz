@@ -27,6 +27,12 @@
       overflow:scroll;
     }
 
+    #legend_svg {
+      width: 300px;
+      height: 100px;
+      background-color: beige;
+    }
+
     #proj_text {
       opacity: 1;
     }

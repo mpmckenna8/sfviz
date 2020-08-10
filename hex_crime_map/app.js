@@ -1,6 +1,6 @@
 import {Deck} from '@deck.gl/core';
 import {GeoJsonLayer} from '@deck.gl/layers';
-//import d3 from 'd3'
+import * as d3 from 'd3'
 
 // https://github.com/visgl/deck.gl/blob/master/docs/layers/hexagon-layer.md
 import {HexagonLayer} from '@deck.gl/aggregation-layers';
@@ -126,7 +126,7 @@ const COLOR_RANGE = [
 
 let long_lat = []
 
-
+let color_domain = [0,1]
 
 function renderCrimez() {
 
@@ -202,6 +202,9 @@ function renderCrimez() {
           onSetColorDomain: (ecol) => {
             console.log('color domain set', ecol)
             max_span.innerHTML = ecol[1]
+            color_domain = ecol;
+            create_legend()
+
           //  console.log('max_points: ', max_points)
           },
           updateTriggers: {
@@ -235,9 +238,36 @@ function renderCrimez() {
 
         const OPTIONS = ['radius', 'coverage', 'upperPercentile'];
 
-        // make legend;
-      //  d3.select("#map_legend")
 
+        function create_legend() {
+        // make legend; COLOR_RANGE has the array of colors to use
+        d3.select("#legend_svg")
+          .selectAll('rect')
+          .data( COLOR_RANGE )
+          .enter()
+          .append( 'rect')
+          .attr( 'width', '30px')
+          .attr('height', '10px')
+          .attr('x', (d,i) =>{
+            return (40 * i) + 30 + 'px'
+          })
+          .attr('y', '40px' )
+          .attr('fill', d => {
+            return "rgb(" + d + ")"
+          })
+          
+          d3.select("#legend_svg")
+            .append('text')
+            .attr('x', '40px')
+            .attr('y', "30px")
+            .text(color_domain[0])
+
+            d3.select("#legend_svg")
+            .append('text')
+            .attr('x', '235px')
+            .attr('y', "30px")
+            .text(color_domain[1])
+        }
     })
 }
   
