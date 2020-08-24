@@ -7,6 +7,9 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
 
     <link href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
+
+    <script src='./labelSFbos.geojson'></script>
+
   </head>
   <body>
     <div id='map' style='width: 100%; height: 60em;'></div>
@@ -19,27 +22,28 @@
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
         center: [ -122.431297, 37.773972], // starting position [lng, lat]
-        zoom: 9 // starting zoom
+        zoom: 11 // starting zoom
         });
 
 
         map.on('load', function() {
+
           map.addSource('sfbos', {
-          'type': 'geojson',
-          "data": "./sf_supervisor_districts_2020.geojson"
+            'type': 'geojson',
+            "data": "./sf_supervisor_districts_2020.geojson"
             })
             
             
-        map.addLayer({
-          'id': 'sfbos',
-          'type': 'fill',
-          'source': 'sfbos',
-          'layout': {},
-          'paint': {
-            'fill-color': [ 'get', 'color'],
-            'fill-opacity': 0.8,
-            'fill-outline-color': 'black'
-          }
+          map.addLayer({
+            'id': 'sfbos',
+            'type': 'fill',
+            'source': 'sfbos',
+            'layout': {},
+            'paint': {
+              'fill-color': [ 'get', 'color'],
+              'fill-opacity': 0.8,
+              'fill-outline-color': 'black'
+            }
           });
 
         map.on('click', 'sfbos', function(e) {
@@ -70,7 +74,21 @@
         map.on('mouseleave', 'sfbos', function() {
           map.getCanvas().style.cursor = '';
         });
-            
+
+        map.addSource('sfbos_labels', {
+            'type': 'geojson',
+            "data": labs
+            })
+          
+        map.addLayer({
+            'id': 'sfbos_labels',
+            'type': 'symbol',
+            'source': 'sfbos_labels',
+            'layout': {
+              'text-field': ['get', 'district']
+            }
+        })
+          
       })
 
 
