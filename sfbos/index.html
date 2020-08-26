@@ -5,34 +5,34 @@
     <title>SF Board of Supervisors info map</title>
 
     <script src='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.js'></script>
-
     <link href='https://api.mapbox.com/mapbox-gl-js/v1.12.0/mapbox-gl.css' rel='stylesheet' />
 
     <script src='./labelSFbos.geojson'></script>
+    <link href='./style.css' rel='stylesheet' />
 
   </head>
   <body>
-    <div id='map' style='width: 100%; height: 60em;'></div>
+
+    <div id='map'>      
+    </div>
+
     <script>
-        // TO MAKE THE MAP APPEAR YOU MUST
-        // ADD YOUR ACCESS TOKEN FROM
-        // https://account.mapbox.com
-        mapboxgl.accessToken = 'pk.eyJ1IjoibXBtY2tlbm5hOCIsImEiOiJfYWx3RlJZIn0.v-vrWv_t1ytntvWpeePhgQ';
-        var map = new mapboxgl.Map({
+
+      mapboxgl.accessToken = 'pk.eyJ1IjoibXBtY2tlbm5hOCIsImEiOiJfYWx3RlJZIn0.v-vrWv_t1ytntvWpeePhgQ';
+      var map = new mapboxgl.Map({
         container: 'map',
         style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
         center: [ -122.431297, 37.773972], // starting position [lng, lat]
         zoom: 11 // starting zoom
-        });
+      });
 
 
-        map.on('load', function() {
+      map.on('load', function() {
 
           map.addSource('sfbos', {
             'type': 'geojson',
             "data": "./sf_supervisor_districts_2020.geojson"
             })
-            
             
           map.addLayer({
             'id': 'sfbos',
@@ -41,16 +41,19 @@
             'layout': {},
             'paint': {
               'fill-color': [ 'get', 'color'],
-              'fill-opacity': 0.8,
+              'fill-opacity': 0.6,
               'fill-outline-color': 'black'
             }
           });
+
 
         map.on('click', 'sfbos', function(e) {
             console.log(e, 'coords = ', e.features[0].geometry.coordinates.slice() )
 
           var coordinates = e.lngLat;
-          var description = e.features[0].properties.supname;
+
+          var description = '<div class="supnamepop"><h1> '+ e.features[0].properties.supdist + ":" + 
+                e.features[0].properties.supname + '</h1></div>';
             
           // Ensure that if the map is zoomed out such that multiple
           // copies of the feature are visible, the popup appears
@@ -90,10 +93,6 @@
         })
           
       })
-
-
-  
-        
          
     </script>
 
