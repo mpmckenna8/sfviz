@@ -16,7 +16,7 @@
     "sfcri2geojson": "0.0.4"
   },
   "devDependencies": {
-    "html-webpack-plugin": "^3.0.7",
+    "html-webpack-plugin": "^5.5.0",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.11.0"
